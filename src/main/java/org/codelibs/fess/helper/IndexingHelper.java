@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.codelibs.fess.es.client.FessEsClient;
 import org.codelibs.fess.mylasta.direction.FessConfig;
+import org.codelibs.fess.util.ActionGetUtil;
 import org.codelibs.fess.util.ComponentUtil;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -141,8 +142,8 @@ public class IndexingHelper {
         final FessConfig fessConfig = ComponentUtil.getFessConfig();
 
         final CountResponse countResponse =
-                fessEsClient.prepareCount(fessConfig.getIndexDocumentSearchIndex()).setTypes(fessConfig.getIndexDocumentType())
-                        .setQuery(queryBuilder).execute().actionGet();
+                ActionGetUtil.actionGet(fessEsClient.prepareCount(fessConfig.getIndexDocumentSearchIndex())
+                        .setTypes(fessConfig.getIndexDocumentType()).setQuery(queryBuilder).execute());
         final long numFound = countResponse.getCount();
         // TODO max threshold
 

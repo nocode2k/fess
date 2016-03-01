@@ -27,6 +27,7 @@ import javax.annotation.Resource;
 
 import org.codelibs.fess.es.user.allcommon.EsAbstractEntity.DocMeta;
 import org.codelibs.fess.es.user.allcommon.EsAbstractEntity.RequestOptionCall;
+import org.codelibs.fess.util.ActionGetUtil;
 import org.dbflute.Entity;
 import org.dbflute.bhv.AbstractBehaviorWritable;
 import org.dbflute.bhv.readable.EntityRowHandler;
@@ -85,7 +86,7 @@ public abstract class EsAbstractBehavior<ENTITY extends Entity, CB extends Condi
     protected int delegateSelectCountUniquely(final ConditionBean cb) {
         // #pending check response and cast problem
         final CountRequestBuilder builder = client.prepareCount(asEsIndex()).setTypes(asEsSearchType());
-        return (int) ((EsAbstractConditionBean) cb).build(builder).execute().actionGet().getCount();
+        return (int) ActionGetUtil.actionGet(((EsAbstractConditionBean) cb).build(builder).execute()).getCount();
     }
 
     @Override
@@ -117,7 +118,7 @@ public abstract class EsAbstractBehavior<ENTITY extends Entity, CB extends Condi
         builder.setFrom(from);
         builder.setSize(size);
         ((EsAbstractConditionBean) cb).request().build(builder);
-        final SearchResponse response = ((EsAbstractConditionBean) cb).build(builder).execute().actionGet();
+        final SearchResponse response = ActionGetUtil.actionGet(((EsAbstractConditionBean) cb).build(builder).execute());
 
         final EsPagingResultBean<RESULT> list = new EsPagingResultBean<>();
         final SearchHits searchHits = response.getHits();
@@ -196,11 +197,12 @@ public abstract class EsAbstractBehavior<ENTITY extends Entity, CB extends Condi
                 client.prepareSearch(asEsIndex()).setTypes(asEsIndexType()).setSearchType(SearchType.SCAN).setScroll(scrollForCursor)
                         .setSize(sizeForCursor);
         ((EsAbstractConditionBean) cb).request().build(builder);
-        final SearchResponse response = ((EsAbstractConditionBean) cb).build(builder).execute().actionGet();
+        final SearchResponse response = ActionGetUtil.actionGet(((EsAbstractConditionBean) cb).build(builder).execute());
 
         String scrollId = response.getScrollId();
         while (scrollId != null) {
-            final SearchResponse scrollResponse = client.prepareSearchScroll(scrollId).setScroll(scrollForDelete).execute().actionGet();
+            final SearchResponse scrollResponse =
+                    ActionGetUtil.actionGet(client.prepareSearchScroll(scrollId).setScroll(scrollForDelete).execute());
             scrollId = scrollResponse.getScrollId();
             final SearchHits searchHits = scrollResponse.getHits();
             final SearchHit[] hits = searchHits.getHits();
@@ -237,7 +239,7 @@ public abstract class EsAbstractBehavior<ENTITY extends Entity, CB extends Condi
         final EsAbstractEntity esEntity = (EsAbstractEntity) entity;
         IndexRequestBuilder builder = createInsertRequest(esEntity);
 
-        final IndexResponse response = builder.execute().actionGet();
+        final IndexResponse response = ActionGetUtil.actionGet(builder.execute());
         esEntity.asDocMeta().id(response.getId());
         return response.isCreated() ? 1 : 0;
     }
@@ -260,7 +262,7 @@ public abstract class EsAbstractBehavior<ENTITY extends Entity, CB extends Condi
         final EsAbstractEntity esEntity = (EsAbstractEntity) entity;
         final IndexRequestBuilder builder = createUpdateRequest(esEntity);
 
-        final IndexResponse response = builder.execute().actionGet();
+        final IndexResponse response = ActionGetUtil.actionGet(builder.execute());
         long version = response.getVersion();
         if (version != -1) {
             esEntity.asDocMeta().version(version);
@@ -287,7 +289,7 @@ public abstract class EsAbstractBehavior<ENTITY extends Entity, CB extends Condi
         final EsAbstractEntity esEntity = (EsAbstractEntity) entity;
         final DeleteRequestBuilder builder = createDeleteRequest(esEntity);
 
-        final DeleteResponse response = builder.execute().actionGet();
+        final DeleteResponse response = ActionGetUtil.actionGet(builder.execute());
         return response.isFound() ? 1 : 0;
     }
 
@@ -306,12 +308,13 @@ public abstract class EsAbstractBehavior<ENTITY extends Entity, CB extends Condi
                 client.prepareSearch(asEsIndex()).setTypes(asEsIndexType()).setSearchType(SearchType.SCAN).setScroll(scrollForDelete)
                         .setSize(sizeForDelete);
         ((EsAbstractConditionBean) cb).request().build(builder);
-        final SearchResponse response = ((EsAbstractConditionBean) cb).build(builder).execute().actionGet();
+        final SearchResponse response = ActionGetUtil.actionGet(((EsAbstractConditionBean) cb).build(builder).execute());
 
         int count = 0;
         String scrollId = response.getScrollId();
         while (scrollId != null) {
-            final SearchResponse scrollResponse = client.prepareSearchScroll(scrollId).setScroll(scrollForDelete).execute().actionGet();
+            final SearchResponse scrollResponse =
+                    ActionGetUtil.actionGet(client.prepareSearchScroll(scrollId).setScroll(scrollForDelete).execute());
             scrollId = scrollResponse.getScrollId();
             final SearchHits searchHits = scrollResponse.getHits();
             final SearchHit[] hits = searchHits.getHits();
@@ -325,7 +328,7 @@ public abstract class EsAbstractBehavior<ENTITY extends Entity, CB extends Condi
                 bulkRequest.add(client.prepareDelete(asEsIndex(), asEsIndexType(), hit.getId()));
             }
             count += hits.length;
-            final BulkResponse bulkResponse = bulkRequest.execute().actionGet();
+            final BulkResponse bulkResponse = ActionGetUtil.actionGet(bulkRequest.execute());
             if (bulkResponse.hasFailures()) {
                 throw new IllegalBehaviorStateException(bulkResponse.buildFailureMessage());
             }
@@ -390,7 +393,7 @@ public abstract class EsAbstractBehavior<ENTITY extends Entity, CB extends Condi
             builderCall.callback(bulkBuilder);
         }
 
-        final BulkResponse response = bulkBuilder.execute().actionGet();
+        final BulkResponse response = ActionGetUtil.actionGet(bulkBuilder.execute());
         final BulkItemResponse[] itemResponses = response.getItems();
         if (itemResponses.length != entityList.size()) {
             throw new IllegalStateException("Invalid response size: " + itemResponses.length + " != " + entityList.size());

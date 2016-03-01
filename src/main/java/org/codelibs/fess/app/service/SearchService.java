@@ -40,6 +40,7 @@ import org.codelibs.fess.es.client.FessEsClientException;
 import org.codelibs.fess.helper.QueryHelper;
 import org.codelibs.fess.helper.SystemHelper;
 import org.codelibs.fess.mylasta.direction.FessConfig;
+import org.codelibs.fess.util.ActionGetUtil;
 import org.codelibs.fess.util.ComponentUtil;
 import org.codelibs.fess.util.QueryResponseList;
 import org.codelibs.fess.util.QueryStringBuilder;
@@ -249,7 +250,7 @@ public class SearchService {
             final UpdateRequestBuilder builder =
                     fessEsClient.prepareUpdate(fessConfig.getIndexDocumentUpdateIndex(), fessConfig.getIndexDocumentType(), id);
             builderLambda.accept(builder);
-            final UpdateResponse response = builder.execute().actionGet();
+            final UpdateResponse response = ActionGetUtil.actionGet(builder.execute());
             return response.isCreated();
         } catch (final ElasticsearchException e) {
             throw new FessEsClientException("Failed to update doc  " + id, e);

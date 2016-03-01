@@ -45,6 +45,7 @@ import org.codelibs.fess.suggest.entity.SuggestItem;
 import org.codelibs.fess.suggest.index.contents.document.ESSourceReader;
 import org.codelibs.fess.suggest.settings.SuggestSettings;
 import org.codelibs.fess.suggest.util.SuggestUtil;
+import org.codelibs.fess.util.ActionGetUtil;
 import org.codelibs.fess.util.ComponentUtil;
 import org.codelibs.fess.util.StreamUtil;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -88,7 +89,7 @@ public class SuggestHelper {
             roleFilterList.add(Pattern.compile(filter));
         });
 
-        fessEsClient.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
+        ActionGetUtil.actionGet(fessEsClient.admin().cluster().prepareHealth().setWaitForYellowStatus().execute());
 
         suggester = Suggester.builder().build(fessEsClient, fessConfig.getIndexDocumentSearchIndex());
         suggester.settings().array().delete(SuggestSettings.DefaultKeys.SUPPORTED_FIELDS);
