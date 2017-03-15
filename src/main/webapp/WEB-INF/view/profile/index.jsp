@@ -76,7 +76,7 @@
 				<div class="row">
 					<div class="col-xs-2"></div>
 					<!-- /.col -->
-					<div class="col-xs-8">
+					<div class="col-xs-12">
 						<la:link href="/"
 							styleClass="btn btn-default">
 							<i class="fa fa-arrow-circle-left"></i>
