@@ -21,12 +21,12 @@
     "analyzer" : {
       "reading_analyzer" : {
         "type" : "custom",
-        "tokenizer" : "fess_japanese_normal",
+        "tokenizer" : "fess_korean_normal",
         "filter" : ["reading_form"]
       },
       "reading_term_analyzer" : {
         "type" : "custom",
-        "tokenizer" : "fess_japanese_normal"
+        "tokenizer" : "fess_korean_normal"
       },
       "normalize_analyzer" : {
         "type" : "custom",
@@ -36,13 +36,13 @@
       },
       "contents_analyzer" : {
         "type" : "custom",
-        "tokenizer" : "fess_japanese_normal",
+        "tokenizer" : "fess_korean_normal",
         "char_filter" : ["mapping_char"],
         "filter" : ["lowercase", "stopword_en_filter", "pos_filter", "content_length_filter", "limit_token_count_filter"]
       },
       "contents_reading_analyzer" : {
         "type" : "custom",
-        "tokenizer" : "fess_japanese_normal",
+        "tokenizer" : "fess_korean_normal",
         "char_filter" : ["mapping_char"],
         "filter" : ["lowercase", "stopword_en_filter", "pos_filter", "content_length_filter", "limit_token_count_filter", "reading_form"]
       },
